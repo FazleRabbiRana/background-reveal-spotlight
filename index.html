@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Background Reveal on Mousemove</title>
+
+	<style>
+		*,
+		*::before,
+		*::after {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+		html, body {
+			width: 100%;
+			overflow-x: hidden;
+		}
+		section {
+			min-height: 80vh;
+			background: linear-gradient(to top, rgba(255, 255, 255, 0.25), transparent);
+		}
+
+
+		:root {
+			--bg-dark: #141518;
+			--text-dark-secondary: #8F9194;
+			--pure-white: #fff;
+		}
+
+		body {
+			background: var(--bg-dark);
+			color: var(--text-dark-secondary);
+			font-family: sans-serif;
+			font-size: 26px;
+			line-height: 1.2;
+		}
+
+		/**
+		* Hero section
+		*/
+		.hero {
+			position: relative;
+			text-align: center;
+			min-height: 100vh;
+			display: grid;
+			place-items: center;
+			background: url(./bg-nature-green-1.jpg) no-repeat center/cover;
+			isolation: isolate;
+			overflow: hidden;
+			--spotlight-inner-transparency: rgba(0, 0, 0, 0);
+			--spotlight-outer-transparency: rgba(0, 0, 0, 0.95);
+		}
+
+		/* hero spotlight */
+		.hero::before {
+			content: "";
+			width: 100%;
+			height: 100%;
+			position: absolute;
+			inset: 0;
+			background: var(--spotlight-outer-transparency);
+			z-index: -2;
+			opacity: 0.9;
+			transition: opacity 0.35s ease;
+		}
+		
+		.hero.mouse-in::before {
+			opacity: 0;
+			transition: opacity 1.25s ease;
+		}
+
+		.spotlight-overlay {
+			z-index: -1;
+			pointer-events: none;
+			position: absolute;
+			width: 200%;
+			height: 200%;
+			top: -50%;
+			left: -50%;
+			background: radial-gradient(
+				circle, 
+				var(--spotlight-inner-transparency) 0%, 
+				var(--spotlight-outer-transparency) 25%, 
+				var(--spotlight-outer-transparency) 100%
+			);
+			opacity: 0;
+			--opacity-transition-time: 0.7s;
+			transition: opacity var(--opacity-transition-time) ease;
+		}
+		 
+		 .hero.mouse-in .spotlight-overlay {
+			 opacity: 1;
+		 }
+
+		/* hero title */
+		.hero h1 {
+			font-size: 100px;
+			color: var(--text-dark-secondary);
+		}
+
+		.hero h1 > span {
+			display: inline-block;
+			--animation-duration: 0.15s;
+			--animation-timing-function: linear;
+			--animation-delay-multiplier: 1;
+			--animation-delay: calc(var(--animation-duration) * var(--animation-delay-multiplier));
+			animation: textColorHighlight var(--animation-duration) var(--animation-timing-function) var(--animation-delay) forwards;
+		}
+
+		.hero h1 > span:nth-child(2) {
+			--animation-delay-multiplier: 4.5;
+		}
+
+		.hero h1 > span:nth-child(3) {
+			--animation-delay-multiplier: 9;
+			animation: textColorHighlight var(--animation-duration) var(--animation-timing-function) var(--animation-delay) forwards, textColorHighlightGradient var(--animation-duration) var(--animation-timing-function) calc(var(--animation-delay) * 1.5) forwards;
+		}
+
+		@keyframes textColorHighlight {
+			to {
+				color: var(--pure-white);
+			}
+		}
+
+		@keyframes textColorHighlightGradient {
+			to {
+				background: linear-gradient(170deg, #1ACDFF 0%, #36FFD0 50%, #0059FF 100%);
+				-webkit-text-fill-color: transparent;
+				-webkit-background-clip: text;
+			}
+		}
+	</style>
+</head>
+<body>
+	<section class="hero">
+		<div class="spotlight-overlay"></div>
+		<div class="container">
+			<div class="hero-inner">
+				<h1>
+					<span>Explore</span>
+					<span>the</span>
+					<span>Nature</span>
+				</h1>
+				<p>Move mouse to reveal the background!</p>
+			</div>
+		</div>
+	</section>
+
+	<section></section>
+	<section></section>
+	<section></section>
+
+	<!-- scripts -->
+	<script>
+		window.addEventListener('DOMContentLoaded', () => {
+			const heroSection = document.querySelector('.hero');
+			const spotlightOverlay = document.querySelector('.spotlight-overlay');
+
+			// page scroll position
+			let scrollAmount = 0;
+			let xPos = 0;
+			let yPos = 0;
+
+			// event listeners
+			heroSection.addEventListener('mousemove', handleMoveIn);
+			heroSection.addEventListener('touchmove', handleMoveIn);
+			heroSection.addEventListener('mouseleave', () => heroSection.classList.remove('mouse-in'));
+
+			// mouse movement function
+			function handleMoveIn(e) {
+				// to support both mouse and touch events
+				const clientX = e.clientX || e.touches[0].clientX;
+				const clientY = e.clientY || e.touches[0].clientY;
+
+				// delay the effect
+				setTimeout(() => {
+					// get the coordinates and subtract the revealed area to make it centered
+					xPos = clientX - spotlightOverlay.offsetWidth / 2;
+					yPos = clientY - spotlightOverlay.offsetHeight / 2;
+
+					scrollAmount = spotlightOverlay.scrollTop + yPos;
+
+					// set the spotlight overlay position with updated values
+					spotlightOverlay.style.left = `${xPos}px`;
+					spotlightOverlay.style.top = `${scrollAmount}px`;
+				}, 100);
+
+				heroSection.classList.add('mouse-in');
+			}
+		});
+	</script>
+</body>
+</html>
